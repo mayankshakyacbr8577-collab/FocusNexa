@@ -47,7 +47,7 @@ const Register = () => {
       );
       login(response, response.token);
       navigate('/dashboard');
-    } catch (err) {
+    } catch {
       setError('Registration failed. Please try again.');
     } finally {
       setLoading(false);

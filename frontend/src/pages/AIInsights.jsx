@@ -6,19 +6,28 @@ const AIInsights = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadInsights();
-  }, []);
+    let isMounted = true;
+    const fetchInsights = async () => {
+      try {
+        const data = await aiAPI.getInsights();
+        if (isMounted) {
+          setInsights(data);
+        }
+      } catch (error) {
+        console.error('Error loading AI insights:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-  const loadInsights = async () => {
-    try {
-      const data = await aiAPI.getInsights();
-      setInsights(data);
-    } catch (error) {
-      console.error('Error loading AI insights:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchInsights();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (loading) {
     return <div className="loading-container"><div className="spinner" /><p>Loading AI insights...</p></div>;

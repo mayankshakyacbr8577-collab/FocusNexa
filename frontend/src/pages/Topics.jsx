@@ -12,21 +12,33 @@ const Topics = () => {
     subtopics: '',
   });
   const [loading, setLoading] = useState(true);
+  const [refreshIndex, setRefreshIndex] = useState(0);
+
+  const reloadTopics = () => setRefreshIndex((i) => i + 1);
 
   useEffect(() => {
-    loadTopics();
-  }, []);
+    let isMounted = true;
+    const fetchTopics = async () => {
+      try {
+        const data = await topicAPI.getAll();
+        if (isMounted) {
+          setTopics(data);
+        }
+      } catch (error) {
+        console.error('Error loading topics:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-  const loadTopics = async () => {
-    try {
-      const data = await topicAPI.getAll();
-      setTopics(data);
-    } catch (error) {
-      console.error('Error loading topics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchTopics();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshIndex]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +59,7 @@ const Topics = () => {
       setShowForm(false);
       setEditingTopic(null);
       setFormData({ name: '', subtopics: '' });
-      loadTopics();
+      reloadTopics();
     } catch (error) {
       console.error('Error saving topic:', error);
     }
@@ -69,7 +81,7 @@ const Topics = () => {
     if (window.confirm('Are you sure you want to delete this topic?')) {
       try {
         await topicAPI.delete(id);
-        loadTopics();
+        reloadTopics();
       } catch (error) {
         console.error('Error deleting topic:', error);
       }
@@ -82,7 +94,7 @@ const Topics = () => {
       const topic = topics.find((t) => t._id === id);
       if (topic) {
         const updatedSubtopics = [...topic.subtopics, subtopic];
-        topicAPI.update(id, { subtopics: updatedSubtopics }).then(loadTopics);
+        topicAPI.update(id, { subtopics: updatedSubtopics }).then(reloadTopics);
       }
     }
   };

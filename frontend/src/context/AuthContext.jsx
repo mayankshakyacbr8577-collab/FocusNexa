@@ -1,21 +1,29 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('focusnexa_user');
-    const storedToken = localStorage.getItem('focusnexa_token');
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
+  const [user, setUser] = useState(() => {
+    try {
+      const storedUser = localStorage.getItem('focusnexa_user');
+      const storedToken = localStorage.getItem('focusnexa_token');
+      if (storedUser && storedToken) {
+        return JSON.parse(storedUser);
+      }
+    } catch {
+      // Ignore parse errors and fallback to null
     }
-    setLoading(false);
-  }, []);
+    return null;
+  });
+
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return Boolean(
+      localStorage.getItem('focusnexa_user') && localStorage.getItem('focusnexa_token')
+    );
+  });
+
+  const [loading] = useState(false);
 
   const login = (userData, token) => {
     setUser(userData);

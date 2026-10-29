@@ -31,7 +31,7 @@ const Login = () => {
       const response = await authAPI.login(formData.email, formData.password);
       login(response, response.token);
       navigate('/dashboard');
-    } catch (err) {
+    } catch {
       setError('Invalid email or password');
     } finally {
       setLoading(false);

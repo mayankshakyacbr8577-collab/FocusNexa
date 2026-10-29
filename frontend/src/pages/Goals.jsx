@@ -14,21 +14,33 @@ const Goals = () => {
     deadline: '',
   });
   const [loading, setLoading] = useState(true);
+  const [refreshIndex, setRefreshIndex] = useState(0);
+
+  const reloadGoals = () => setRefreshIndex((i) => i + 1);
 
   useEffect(() => {
-    loadGoals();
-  }, []);
+    let isMounted = true;
+    const fetchGoals = async () => {
+      try {
+        const data = await goalAPI.getAll();
+        if (isMounted) {
+          setGoals(data);
+        }
+      } catch (error) {
+        console.error('Error loading goals:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-  const loadGoals = async () => {
-    try {
-      const data = await goalAPI.getAll();
-      setGoals(data);
-    } catch (error) {
-      console.error('Error loading goals:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchGoals();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshIndex]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,7 +54,7 @@ const Goals = () => {
       setShowForm(false);
       setEditingGoal(null);
       setFormData({ title: '', target: 10, progress: 0, deadline: '' });
-      loadGoals();
+      reloadGoals();
     } catch (error) {
       console.error('Error saving goal:', error);
     }
@@ -66,7 +78,7 @@ const Goals = () => {
     if (window.confirm('Are you sure you want to delete this goal?')) {
       try {
         await goalAPI.delete(id);
-        loadGoals();
+        reloadGoals();
       } catch (error) {
         console.error('Error deleting goal:', error);
       }
@@ -76,7 +88,7 @@ const Goals = () => {
   const handleComplete = async (id) => {
     try {
       await goalAPI.update(id, { completed: true });
-      loadGoals();
+      reloadGoals();
     } catch (error) {
       console.error('Error completing goal:', error);
     }
@@ -125,7 +137,7 @@ const Goals = () => {
                     className="form-control"
                     placeholder="e.g., 10"
                     value={formData.target}
-                    onChange={(e) => setFormData({ ...formData, target: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, target: parseInt(e.target.value) || 0 })}
                     min="1"
                     required
                   />
@@ -137,7 +149,7 @@ const Goals = () => {
                     className="form-control"
                     placeholder="e.g., 5"
                     value={formData.progress}
-                    onChange={(e) => setFormData({ ...formData, progress: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, progress: parseInt(e.target.value) || 0 })}
                     min="0"
                   />
                 </div>

@@ -14,6 +14,57 @@ export const getAnalytics = async (req, res) => {
     const totalStudyTime = sessions.reduce((acc, session) => acc + session.duration, 0);
     const totalSessions = sessions.length;
 
+    // Calculate today's study time and comparison with yesterday
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const todaySessions = sessions.filter((s) => {
+      const d = new Date(s.date);
+      return d >= todayStart && d <= todayEnd;
+    });
+    const todayStudyMinutes = todaySessions.reduce((acc, s) => acc + s.duration, 0);
+    const todayStudyTime = `${Math.floor(todayStudyMinutes / 60)}h ${todayStudyMinutes % 60}m`;
+
+    const yesterdayStart = new Date(todayStart);
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+    const yesterdayEnd = new Date(todayStart);
+    yesterdayEnd.setMilliseconds(yesterdayEnd.getMilliseconds() - 1);
+
+    const yesterdaySessions = sessions.filter((s) => {
+      const d = new Date(s.date);
+      return d >= yesterdayStart && d <= yesterdayEnd;
+    });
+    const yesterdayMinutes = yesterdaySessions.reduce((acc, s) => acc + s.duration, 0);
+    const todayTrend = yesterdayMinutes > 0
+      ? Math.round(((todayStudyMinutes - yesterdayMinutes) / yesterdayMinutes) * 100)
+      : (todayStudyMinutes > 0 ? 100 : 0);
+
+    // Calculate this week's study time and comparison with last week
+    const now = new Date();
+    const thisWeekStart = new Date(now);
+    thisWeekStart.setDate(now.getDate() - now.getDay());
+    thisWeekStart.setHours(0, 0, 0, 0);
+
+    const thisWeekSessions = sessions.filter((s) => new Date(s.date) >= thisWeekStart);
+    const thisWeekMinutes = thisWeekSessions.reduce((acc, s) => acc + s.duration, 0);
+    const weeklyStudyTime = `${Math.floor(thisWeekMinutes / 60)}h ${thisWeekMinutes % 60}m`;
+
+    const lastWeekStart = new Date(thisWeekStart);
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+    const lastWeekEnd = new Date(thisWeekStart);
+    lastWeekEnd.setMilliseconds(lastWeekEnd.getMilliseconds() - 1);
+
+    const lastWeekSessions = sessions.filter((s) => {
+      const d = new Date(s.date);
+      return d >= lastWeekStart && d <= lastWeekEnd;
+    });
+    const lastWeekMinutes = lastWeekSessions.reduce((acc, s) => acc + s.duration, 0);
+    const weeklyTrend = lastWeekMinutes > 0
+      ? Math.round(((thisWeekMinutes - lastWeekMinutes) / lastWeekMinutes) * 100)
+      : (thisWeekMinutes > 0 ? 100 : 0);
+
     // Calculate average daily study time (last 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -64,8 +115,12 @@ export const getAnalytics = async (req, res) => {
       const weekSessions = sessions.filter(
         (s) => new Date(s.date) >= weekStart && new Date(s.date) <= weekEnd
       );
-      return weekSessions.reduce((acc, s) => acc + s.duration / 60, 0);
+      return daySessionsReduce(weekSessions);
     });
+
+    function daySessionsReduce(arr) {
+      return arr.reduce((acc, s) => acc + s.duration / 60, 0);
+    }
 
     // Monthly study hours (last 6 months)
     const monthlyStudyHours = Array.from({ length: 6 }, (_, i) => {
@@ -97,6 +152,12 @@ export const getAnalytics = async (req, res) => {
 
     res.json({
       totalStudyTime: Math.round(totalStudyTime / 60),
+      todayStudyTime,
+      todayStudyMinutes,
+      todayTrend,
+      weeklyStudyTime,
+      weeklyStudyMinutes,
+      weeklyTrend,
       averageDailyStudyTime: parseFloat(averageDailyStudyTime),
       totalSessions,
       mostStudiedTopic,

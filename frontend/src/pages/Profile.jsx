@@ -1,30 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { userAPI } from '../services/api';
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    learningGoals: '',
-    preferredDuration: 60,
-    preferredTopics: '',
-  });
+  const [formData, setFormData] = useState(() => ({
+    name: user?.name || '',
+    email: user?.email || '',
+    learningGoals: user?.learningGoals || '',
+    preferredDuration: user?.preferredDuration || 60,
+    preferredTopics: user?.preferredTopics?.join(', ') || '',
+  }));
+  const [prevUser, setPrevUser] = useState(user);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        learningGoals: user.learningGoals || '',
-        preferredDuration: user.preferredDuration || 60,
-        preferredTopics: user.preferredTopics?.join(', ') || '',
-      });
-    }
-  }, [user]);
+  if (user !== prevUser) {
+    setPrevUser(user);
+    setFormData({
+      name: user?.name || '',
+      email: user?.email || '',
+      learningGoals: user?.learningGoals || '',
+      preferredDuration: user?.preferredDuration || 60,
+      preferredTopics: user?.preferredTopics?.join(', ') || '',
+    });
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

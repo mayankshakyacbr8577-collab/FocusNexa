@@ -1,0 +1,13 @@
+{
+  "name": "focusnexa-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FocusNexa - AI-Powered Study & Digital Productivity Platform",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "start:backend": "npm --prefix backend start",
+    "build:frontend": "npm --prefix frontend run build",
+    "lint:frontend": "npm --prefix frontend run lint"
+  }
+}

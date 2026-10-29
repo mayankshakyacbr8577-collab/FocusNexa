@@ -8,19 +8,28 @@ const Analytics = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadAnalytics();
-  }, []);
+    let isMounted = true;
+    const fetchAnalytics = async () => {
+      try {
+        const data = await analyticsAPI.get();
+        if (isMounted) {
+          setAnalytics(data);
+        }
+      } catch (error) {
+        console.error('Error loading analytics:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-  const loadAnalytics = async () => {
-    try {
-      const data = await analyticsAPI.get();
-      setAnalytics(data);
-    } catch (error) {
-      console.error('Error loading analytics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchAnalytics();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
 

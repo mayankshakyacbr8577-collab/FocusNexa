@@ -29,7 +29,8 @@ export const getInsights = async (req, res) => {
     if (process.env.GEMINI_API_KEY) {
       try {
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+        const model = genAI.getGenerativeModel({ model: modelName });
 
         const prompt = `Based on the following study data, provide insights in JSON format:
         Sessions: ${JSON.stringify(sessionData)}
@@ -99,7 +100,8 @@ export const generateStudyPlan = async (req, res) => {
     if (process.env.GEMINI_API_KEY) {
       try {
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+        const model = genAI.getGenerativeModel({ model: modelName });
 
         const prompt = `Create a 4-week study plan for: "${goal}". 
         Return a JSON object with this structure:

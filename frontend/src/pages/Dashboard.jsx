@@ -11,26 +11,35 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadDashboardData();
+    let isMounted = true;
+    const fetchDashboardData = async () => {
+      try {
+        const [analyticsData, sessionsData, goalsData] = await Promise.all([
+          analyticsAPI.get(),
+          sessionAPI.getAll(),
+          goalAPI.getAll(),
+        ]);
+
+        if (isMounted) {
+          setAnalytics(analyticsData);
+          setRecentSessions(sessionsData.slice(0, 5));
+          setTodayGoals(goalsData.filter((g) => !g.completed).slice(0, 3));
+        }
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchDashboardData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
-
-  const loadDashboardData = async () => {
-    try {
-      const [analyticsData, sessionsData, goalsData] = await Promise.all([
-        analyticsAPI.get(),
-        sessionAPI.getAll(),
-        goalAPI.getAll(),
-      ]);
-
-      setAnalytics(analyticsData);
-      setRecentSessions(sessionsData.slice(0, 5));
-      setTodayGoals(goalsData.filter((g) => !g.completed).slice(0, 3));
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
 
@@ -58,16 +67,16 @@ const Dashboard = () => {
         <div className="dashboard-stats">
           <StatCard
             title="Today's Study"
-            value="3h 25m"
+            value={analytics?.todayStudyTime || '0h 0m'}
             icon="⏱️"
-            trend={12}
+            trend={analytics?.todayTrend}
             color="primary"
           />
           <StatCard
             title="Weekly Study"
-            value="18h 40m"
+            value={analytics?.weeklyStudyTime || '0h 0m'}
             icon="📅"
-            trend={8}
+            trend={analytics?.weeklyTrend}
             color="success"
           />
           <StatCard

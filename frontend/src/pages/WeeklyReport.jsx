@@ -6,19 +6,28 @@ const WeeklyReport = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadReport();
-  }, []);
+    let isMounted = true;
+    const fetchReport = async () => {
+      try {
+        const data = await weeklyReportAPI.get();
+        if (isMounted) {
+          setReport(data);
+        }
+      } catch (error) {
+        console.error('Error loading weekly report:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-  const loadReport = async () => {
-    try {
-      const data = await weeklyReportAPI.get();
-      setReport(data);
-    } catch (error) {
-      console.error('Error loading weekly report:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchReport();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (loading) {
     return <div className="loading-container"><div className="spinner" /><p>Loading weekly report...</p></div>;
