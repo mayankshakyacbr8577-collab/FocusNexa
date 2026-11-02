@@ -98,6 +98,16 @@
   margin-bottom: var(--spacing-xl);
 }
 
+@media (max-width: 640px) {
+  .hero-cta {
+    flex-direction: column;
+  }
+
+  .hero-cta .btn {
+    width: 100%;
+  }
+}
+
 .hero-cta .btn {
   align-items: center;
   gap: var(--spacing-sm);

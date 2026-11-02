@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import StudyTimer from '../components/StudyTimer';
 import SessionCard from '../components/SessionCard';
 import EmptyState from '../components/EmptyState';
+import ExtensionCTA from '../components/ExtensionCTA';
 import { sessionAPI, topicAPI } from '../services/api';
 
 const StudySessions = () => {
@@ -131,6 +132,8 @@ const StudySessions = () => {
           <p>Track and manage your focused study sessions</p>
         </div>
 
+        <ExtensionCTA variant="inline" />
+
         {!showTimer ? (
           <>
             {editingSession ? (
@@ -187,7 +190,7 @@ const StudySessions = () => {
                         onChange={(e) => setEditFormData({ ...editFormData, goal: e.target.value })}
                       />
                     </div>
-                    <div className="flex gap-md">
+                    <div className="flex gap-md flex-responsive">
                       <button type="submit" className="btn btn-primary">
                         Update Session
                       </button>

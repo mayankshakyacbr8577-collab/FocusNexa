@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import ExtensionCTA from './ExtensionCTA';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const menuItems = [
@@ -40,6 +41,10 @@ const Sidebar = ({ isOpen, onClose }) => {
             ))}
           </ul>
         </nav>
+
+        <div className="sidebar-footer">
+          <ExtensionCTA variant="sidebar" />
+        </div>
       </aside>
     </>
   );

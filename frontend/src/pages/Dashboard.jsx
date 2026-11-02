@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Link } from 'react-router-dom';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import StatCard from '../components/StatCard';
 import ChartCard from '../components/ChartCard';
+import ExtensionCTA from '../components/ExtensionCTA';
 import { analyticsAPI, sessionAPI, goalAPI } from '../services/api';
 
 const Dashboard = () => {
@@ -41,7 +43,7 @@ const Dashboard = () => {
     };
   }, []);
 
-  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
+  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
   if (loading) {
     return (
@@ -59,12 +61,17 @@ const Dashboard = () => {
   return (
     <div className="page-layout">
       <div className="page-content">
-        <div className="page-header">
-          <h1>Dashboard</h1>
-          <p>Welcome back! Here's your study overview.</p>
+        <div className="page-header-modern">
+          <div>
+            <h1 className="page-title-modern">Dashboard</h1>
+            <p className="page-subtitle-modern">Welcome back! Here's your study overview.</p>
+          </div>
+          <div className="page-actions">
+            <button className="btn btn-primary">Quick Start</button>
+          </div>
         </div>
 
-        <div className="dashboard-stats">
+        <div className="dashboard-stats-modern">
           <StatCard
             title="Today's Study"
             value={analytics?.todayStudyTime || '0h 0m'}
@@ -102,37 +109,35 @@ const Dashboard = () => {
           />
         </div>
 
-        <div className="dashboard-charts">
-          <div className="dashboard-chart">
-            <ChartCard title="Daily Study Hours">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={analytics?.dailyStudyHours?.map((h, i) => ({ name: `Day ${i + 1}`, hours: h })) || []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="hours" fill="#6366f1" />
-                </BarChart>
+        <div className="dashboard-charts-modern">
+          <div className="dashboard-chart-large">
+            <ChartCard title="Weekly Study Progress">
+              <ResponsiveContainer width="100%" height={350}>
+                <AreaChart data={analytics?.weeklyStudyHours?.map((h, i) => ({ name: `Week ${i + 1}`, hours: h })) || []}>
+                  <defs>
+                    <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      borderRadius: '8px',
+                      border: 'none',
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Area type="monotone" dataKey="hours" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorHours)" />
+                </AreaChart>
               </ResponsiveContainer>
             </ChartCard>
           </div>
 
-          <div className="dashboard-chart">
-            <ChartCard title="Weekly Progress">
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={analytics?.weeklyStudyHours?.map((h, i) => ({ name: `Week ${i + 1}`, hours: h })) || []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="hours" stroke="#6366f1" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartCard>
-          </div>
-
-          <div className="dashboard-chart">
+          <div className="dashboard-chart-modern">
             <ChartCard title="Topic Distribution">
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -142,7 +147,7 @@ const Dashboard = () => {
                     cy="50%"
                     labelLine={false}
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
+                    outerRadius={90}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -156,86 +161,110 @@ const Dashboard = () => {
             </ChartCard>
           </div>
 
-          <div className="dashboard-chart">
+          <div className="dashboard-chart-modern">
+            <ChartCard title="Daily Study Hours">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={analytics?.dailyStudyHours?.map((h, i) => ({ name: `Day ${i + 1}`, hours: h })) || []}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} />
+                  <Tooltip />
+                  <Bar dataKey="hours" fill="#6366f1" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+
+          <div className="dashboard-chart-modern">
             <ChartCard title="Goal Completion">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={analytics?.goalCompletion || []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="completed" fill="#10b981" name="Completed" />
-                  <Bar dataKey="total" fill="#e2e8f0" name="Total" />
+                  <Bar dataKey="completed" fill="#10b981" name="Completed" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="total" fill="#e2e8f0" name="Total" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
           </div>
         </div>
 
-        <div className="dashboard-grid">
-          <div className="dashboard-section">
-            <h2 className="section-title">Recent Study Sessions</h2>
-            <div className="session-list">
+        <div className="dashboard-grid-modern">
+          <div className="dashboard-section-modern">
+            <div className="section-header-modern">
+              <h2 className="section-title-modern">Recent Study Sessions</h2>
+              <Link to="/sessions" className="view-all-link">View All</Link>
+            </div>
+            <div className="session-list-modern">
               {recentSessions.length > 0 ? (
                 recentSessions.map((session) => (
-                  <div key={session._id} className="session-item">
-                    <div className="session-info">
-                      <span className="session-topic">{session.topic}</span>
+                  <div key={session._id} className="session-item-modern">
+                    <div className="session-icon">📚</div>
+                    <div className="session-info-modern">
+                      <span className="session-topic-modern">{session.topic}</span>
                       {session.subtopic && (
-                        <span className="session-subtopic">→ {session.subtopic}</span>
+                        <span className="session-subtopic-modern">→ {session.subtopic}</span>
                       )}
                     </div>
-                    <div className="session-meta">
-                      <span className="session-duration">{session.duration}m</span>
-                      <span className="session-date">
+                    <div className="session-meta-modern">
+                      <span className="session-duration-modern">{session.duration}m</span>
+                      <span className="session-date-modern">
                         {new Date(session.date).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-secondary">No recent sessions</p>
+                <div className="empty-state-modern">
+                  <span className="empty-icon">📖</span>
+                  <p className="empty-text">No recent sessions</p>
+                  <Link to="/sessions" className="empty-action">Start Studying</Link>
+                </div>
               )}
             </div>
           </div>
 
-          <div className="dashboard-section">
-            <h2 className="section-title">Today's Goals</h2>
-            <div className="goal-list">
+          <div className="dashboard-section-modern">
+            <div className="section-header-modern">
+              <h2 className="section-title-modern">Today's Goals</h2>
+              <Link to="/goals" className="view-all-link">View All</Link>
+            </div>
+            <div className="goal-list-modern">
               {todayGoals.length > 0 ? (
                 todayGoals.map((goal) => (
-                  <div key={goal._id} className="goal-item">
-                    <div className="goal-info">
-                      <span className="goal-title">{goal.title}</span>
-                      <div className="progress">
+                  <div key={goal._id} className="goal-item-modern">
+                    <div className="goal-info-modern">
+                      <span className="goal-title-modern">{goal.title}</span>
+                      <div className="progress-modern">
                         <div
-                          className="progress-bar progress-bar-success"
+                          className="progress-bar-modern progress-bar-success-modern"
                           style={{ width: `${(goal.progress / goal.target) * 100}%` }}
                         />
                       </div>
                     </div>
-                    <span className="goal-percentage">
+                    <span className="goal-percentage-modern">
                       {Math.round((goal.progress / goal.target) * 100)}%
                     </span>
                   </div>
                 ))
               ) : (
-                <p className="text-secondary">No active goals</p>
+                <div className="empty-state-modern">
+                  <span className="empty-icon">🎯</span>
+                  <p className="empty-text">No active goals</p>
+                  <Link to="/goals" className="empty-action">Set Goals</Link>
+                </div>
               )}
             </div>
           </div>
 
-          <div className="dashboard-section">
-            <h2 className="section-title">AI Quick Insight</h2>
-            <div className="ai-insight-card">
-              <div className="ai-icon">🤖</div>
-              <p className="ai-insight-text">
-                You are spending more time on React than backend technologies.
-                Consider adding more Node.js sessions this week to balance your
-                learning.
-              </p>
+          <div className="dashboard-section-modern">
+            <div className="section-header-modern">
+              <h2 className="section-title-modern">Productivity Boost</h2>
             </div>
+            <ExtensionCTA variant="card" />
           </div>
         </div>
       </div>
